@@ -53,6 +53,9 @@ class DPAbstractSamplerNode(ABC):
         super().__init__(*args, **kwargs)
         wildcards_folder = self._find_wildcards_folder()
         self._wildcard_manager = OrderedWildcardManager(path=wildcards_folder)
+        # Disable sorting to preserve file order
+        self._wildcard_manager.sort_wildcards = False
+        print("OrderedWildcardManager: sort_wildcards disabled - wildcards will be in file order")
         self._current_prompt = None
         self._current_index = 0
 

@@ -3,16 +3,19 @@ Custom WildcardManager that preserves file order instead of sorting alphabetical
 """
 from pathlib import Path
 from typing import List
+from dynamicprompts.wildcards import WildcardManager
 
 
-class OrderedWildcardManager:
+class OrderedWildcardManager(WildcardManager):
     """
     WildcardManager that preserves the order of wildcards as they appear in files
     instead of sorting them alphabetically.
     """
     
     def __init__(self, path: Path = None):
-        self.path = Path(path) if path else None
+        super().__init__(path=path)
+        # Disable sorting to preserve file order
+        self.sort_wildcards = False
     def _load_wildcard_file(self, file_path: Path) -> List[str]:
         """
         Load wildcards from a file, preserving the order they appear in the file.
