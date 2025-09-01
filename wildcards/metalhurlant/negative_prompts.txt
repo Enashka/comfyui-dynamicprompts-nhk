@@ -1,0 +1,6 @@
+ugly, bad art, amateur, poorly drawn, deformed, blurry, disfigured, boring composition, unrealistic proportions
+text, watermark, signature, logo, pixelated, low quality, low resolution, JPEG artifacts, cropped image, out of frame
+boring, plain background, dull colors, simple composition, ordinary, mundane, photorealistic
+deformed anatomy, extra limbs, missing limbs, disconnected limbs, mutation, malformed hands, malformed fingers
+duplicate, duplicate body parts, duplicate faces, multiple heads, extra heads, mutated hands, extra limbs, extra fingers
+badly drawn face, deformed face, poorly drawn face, poorly drawn hands, poorly drawn feet 

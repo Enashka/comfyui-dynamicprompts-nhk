@@ -7,7 +7,20 @@ from pathlib import Path
 
 from dynamicprompts.sampling_context import SamplingContext
 from dynamicprompts.wildcards import WildcardManager
-from ..ordered_wildcard_manager import OrderedWildcardManager
+
+# Import our custom wildcard manager
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+
+try:
+    from ordered_wildcard_manager import OrderedWildcardManager
+except ImportError:
+    # Fallback to original if import fails
+    OrderedWildcardManager = WildcardManager
+    print("Warning: Could not load OrderedWildcardManager, using default WildcardManager")
 
 logger = logging.getLogger(__name__)
 
