@@ -7,6 +7,7 @@ from pathlib import Path
 
 from dynamicprompts.sampling_context import SamplingContext
 from dynamicprompts.wildcards import WildcardManager
+from ..ordered_wildcard_manager import OrderedWildcardManager
 
 logger = logging.getLogger(__name__)
 
@@ -19,23 +20,26 @@ class DPAbstractSamplerNode(ABC):
                 "text": ("STRING", {"multiline": True, "dynamicPrompts": False}),
                 "seed": ("INT", {"default": 0, "display": "number"}),
                 "autorefresh": (["Yes", "No"], {"default": "No"}),
+                "reset": ("BOOLEAN", {"default": False, "tooltip": "Reset to first item in sequence"}),
             },
         }
 
     @classmethod
-    def IS_CHANGED(cls, text: str, seed: int, autorefresh: str):
+    def IS_CHANGED(cls, text: str, seed: int, autorefresh: str, reset: bool):
         # Force re-evaluation of the node
         return float("NaN")
 
-    RETURN_TYPES = ("STRING",)
+    RETURN_TYPES = ("STRING", "INT")
+    RETURN_NAMES = ("prompt", "current_index")
     FUNCTION = "get_prompt"
     CATEGORY = "Dynamic Prompts"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         wildcards_folder = self._find_wildcards_folder()
-        self._wildcard_manager = WildcardManager(path=wildcards_folder)
+        self._wildcard_manager = OrderedWildcardManager(path=wildcards_folder)
         self._current_prompt = None
+        self._current_index = 0
 
     def _find_wildcards_folder(self) -> Path | None:
         """
@@ -78,7 +82,7 @@ class DPAbstractSamplerNode(ABC):
         """
         return self._current_prompt != text
 
-    def get_prompt(self, text: str, seed: int, autorefresh: str) -> tuple[str]:
+    def get_prompt(self, text: str, seed: int, autorefresh: str, reset: bool = False) -> tuple[str, int]:
         """
         Main entrypoint for this node.
         Using the sampling context, generate a new prompt.
@@ -88,24 +92,37 @@ class DPAbstractSamplerNode(ABC):
             self.context.rand.seed(seed)
 
         if text.strip() == "":
-            return ("",)
+            return ("", 0)
 
-        if self.has_prompt_changed(text):
+        # Handle reset functionality
+        if reset:
+            self._current_index = 0
+            self._current_prompt = None
+            self._prompts = None
+            print("Reset to first item in sequence")
+
+        if self.has_prompt_changed(text) or reset:
             self._current_prompt = text
             self._prompts = self.context.sample_prompts(self._current_prompt)
+            if reset:
+                self._current_index = 0
 
         if self._prompts is None:
             logger.exception("Something went wrong. Prompts is None!")
-            return ("",)
+            return ("", 0)
 
         if self._current_prompt is None:
             logger.exception("Something went wrong. Current prompt is None!")
-            return ("",)
+            return ("", 0)
 
         new_prompt = self._get_next_prompt(self._prompts, self._current_prompt)
-        print(f"New prompt: {new_prompt}")
+        
+        # Increment index for next time
+        self._current_index += 1
+        
+        print(f"New prompt: {new_prompt} (Index: {self._current_index})")
 
-        return (str(new_prompt),)
+        return (str(new_prompt), self._current_index)
 
     @abstractproperty
     def context(self) -> SamplingContext:
