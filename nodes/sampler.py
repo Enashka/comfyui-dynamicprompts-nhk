@@ -17,10 +17,12 @@ sys.path.insert(0, parent_dir)
 
 try:
     from ordered_wildcard_manager import OrderedWildcardManager
-except ImportError:
+    print("SUCCESS: OrderedWildcardManager loaded - wildcards will be in file order")
+except ImportError as e:
     # Fallback to original if import fails
     OrderedWildcardManager = WildcardManager
-    print("Warning: Could not load OrderedWildcardManager, using default WildcardManager")
+    print(f"ERROR: Could not load OrderedWildcardManager: {e}")
+    print("FALLBACK: Using default WildcardManager (alphabetical order)")
 
 logger = logging.getLogger(__name__)
 
